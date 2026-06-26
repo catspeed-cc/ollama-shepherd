@@ -36,17 +36,17 @@ def get_target_port(model_name):
             return port
     return None
 
-def log_to_file(filename, endpoint, content, is_stream=False):
+def log_to_file(filename, endpoint, content, stream=False):
     filepath = os.path.join(LOGS_DIR, filename)
     with open(filepath, 'a') as f:
         json.dump(content, f)
-        if not is_stream:
+        if not stream:
             f.write('\n\n')
 
 @app.post("/api/chat")
 async def proxy_chat(request: Request):
     data = await request.json()
-    log_to_file(IN_LOG_FILE, "/api/chat", data, is_stream=False)
+    log_to_file(IN_LOG_FILE, "/api/chat", data, stream=False)
 
     model = data.get("model", "")
     stream = data.get("stream", False)  # Respect original stream flag
@@ -54,7 +54,7 @@ async def proxy_chat(request: Request):
     target = get_target_port(model)
     if not target:
         error_response = {"error": f"Unknown model: {model}"}
-        log_to_file(OUT_LOG_FILE, "/api/chat", error_response, is_stream=False)
+        log_to_file(OUT_LOG_FILE, "/api/chat", error_response, stream=False)
         return JSONResponse(error_response, status_code=400)
 
     print(f"DEBUG: Routing '{model}' to {target} (stream={stream})")
@@ -65,11 +65,11 @@ async def proxy_chat(request: Request):
             resp = await client.post(f"{target}/api/chat", json=data)
             resp.raise_for_status()
             response_data = resp.json()
-            log_to_file(OUT_LOG_FILE, "/api/chat", response_data, is_stream=False)
+            log_to_file(OUT_LOG_FILE, "/api/chat", response_data, stream=False)
             return JSONResponse(content=response_data)
         except Exception as e:
             error_response = {"error": str(e)}
-            log_to_file(OUT_LOG_FILE, "/api/chat", error_response, is_stream=False)
+            log_to_file(OUT_LOG_FILE, "/api/chat", error_response, stream=False)
             return JSONResponse(error_response, status_code=500)
 
     # STREAMING: Forward NDJSON chunks immediately
@@ -85,11 +85,11 @@ async def proxy_chat(request: Request):
                             response_data.append(chunk_data)
                         except Exception as e:
                             error_response = {"error": str(e)}
-                            yield json.dumps(error_response) + "\n"
-                log_to_file(OUT_LOG_FILE, "/api/chat", response_data, is_stream=False)
+                            yield json.dumps(error_response)
+                log_to_file(OUT_LOG_FILE, "/api/chat", response_data, stream=False)
         except Exception as e:
             yield json.dumps({"error": str(e)})
-            log_to_file(OUT_LOG_FILE, "/api/chat", {"error": str(e)}, is_stream=True)
+            log_to_file(OUT_LOG_FILE, "/api/chat", {"error": str(e)}, stream=stream)
 
     return StreamingResponse(stream_generator(), media_type="application/x-ndjson")
 
@@ -100,7 +100,8 @@ async def proxy_show(request: Request):
         data = await request.json()
     else:
         data = {}
-    log_to_file(IN_LOG_FILE, "/api/show", data, is_stream=False)
+    stream = data.get("stream", False)  # Respect original stream flag
+    log_to_file(IN_LOG_FILE, "/api/show", data, stream=stream)
 
     model = data.get("model", "")
     clean = re.sub(r'^ollama_chat/', '', model).strip()
@@ -110,11 +111,11 @@ async def proxy_show(request: Request):
         try:
             resp = await client.post(f"{target}/api/show", json={"model": clean})
             response_data = resp.json()
-            log_to_file(OUT_LOG_FILE, "/api/show", response_data, is_stream=False)
+            log_to_file(OUT_LOG_FILE, "/api/show", response_data, stream=stream)
             return response_data
         except Exception as e:
             error_response = {"error": str(e)}
-            log_to_file(OUT_LOG_FILE, "/api/show", error_response, is_stream=False)
+            log_to_file(OUT_LOG_FILE, "/api/show", error_response, stream=stream)
             return JSONResponse(error_response, status_code=500)
 
     response_data = {
@@ -129,7 +130,7 @@ async def proxy_show(request: Request):
             "quantization_level": "Q4_K_M"
         }
     }
-    log_to_file(OUT_LOG_FILE, "/api/show", response_data, is_stream=False)
+    log_to_file(OUT_LOG_FILE, "/api/show", response_data, stream=stream)
     return response_data
 
 if __name__ == "__main__":
