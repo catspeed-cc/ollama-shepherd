@@ -1,3 +1,4 @@
 .aider*
-*.pid
 .env
+pid/*
+venv/*

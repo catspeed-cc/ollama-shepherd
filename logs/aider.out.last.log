@@ -1,0 +1,1 @@
+{"model": "", "modified_at": "2024-01-01T00:00:00Z", "size": 1000000000, "digest": "fake-digest", "details": {"format": "gguf", "family": "llama", "parameter_size": "9B", "quantization_level": "Q4_K_M"}}
