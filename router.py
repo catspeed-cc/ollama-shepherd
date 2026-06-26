@@ -5,10 +5,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Variables from environment (provide safe defaults)
 HOST = os.environ.get("ROUTER_HOST", "0.0.0.0")
 PORT = int(os.environ.get("ROUTER_PORT", 10420))
+LOGS_DIR = os.environ.get("LOGS_DIR", "logs")
 
-LOGS_DIR = "logs"
+# Variables not from environment (local variables)
 IN_LOG_FILE = "aider.in.last.log"
 OUT_LOG_FILE = "aider.out.last.log"
 
