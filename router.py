@@ -1,6 +1,14 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse, JSONResponse
-import httpx, re, json
+import httpx, re, json, os
+
+LOGS_DIR = "logs"
+IN_LOG_FILE = "aider.in.last.log"
+OUT_LOG_FILE = "aider.out.last.log"
+
+# Create logs directory if missing
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
 
 app = FastAPI()
 client = httpx.AsyncClient(timeout=600.0)
@@ -23,7 +31,7 @@ def get_target_port(model_name):
 @app.post("/api/chat")
 async def proxy_chat(request: Request):
     data = await request.json()
-    with open('aider.in.last.log', 'w') as f:
+    with open(os.path.join(LOGS_DIR, IN_LOG_FILE), 'w') as f:
         json.dump(data, f)
 
     model = data.get("model", "")
@@ -32,7 +40,7 @@ async def proxy_chat(request: Request):
     target = get_target_port(model)
     if not target:
         error_response = {"error": f"Unknown model: {model}"}
-        with open('aider.out.last.log', 'w') as f:
+        with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'w') as f:
             json.dump(error_response, f)
         return JSONResponse(error_response, status_code=400)
 
@@ -44,12 +52,12 @@ async def proxy_chat(request: Request):
             resp = await client.post(f"{target}/api/chat", json=data)
             resp.raise_for_status()
             response_data = resp.json()
-            with open('aider.out.last.log', 'w') as f:
+            with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'w') as f:
                 json.dump(response_data, f)
             return JSONResponse(content=response_data)
         except Exception as e:
             error_response = {"error": str(e)}
-            with open('aider.out.last.log', 'w') as f:
+            with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'w') as f:
                 json.dump(error_response, f)
             return JSONResponse(error_response, status_code=500)
 
@@ -62,17 +70,17 @@ async def proxy_chat(request: Request):
                         yield line + "\n"
                         try:
                             chunk_data = json.loads(line)
-                            with open('aider.out.last.log', 'a') as f:
+                            with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'a') as f:
                                 json.dump(chunk_data, f)
                                 f.write('\n')
                         except Exception as e:
                             error_response = {"error": str(e)}
-                            with open('aider.out.last.log', 'a') as f:
+                            with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'a') as f:
                                 json.dump(error_response, f)
                                 f.write('\n')
         except Exception as e:
             yield json.dumps({"error": str(e)}) + "\n"
-            with open('aider.out.last.log', 'a') as f:
+            with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'a') as f:
                 json.dump({"error": str(e)}, f)
                 f.write('\n')
 
@@ -83,11 +91,11 @@ async def proxy_chat(request: Request):
 async def proxy_show(request: Request):
     if request.method == "POST":
         data = await request.json()
-        with open('aider.in.last.log', 'w') as f:
+        with open(os.path.join(LOGS_DIR, IN_LOG_FILE), 'w') as f:
             json.dump(data, f)
     else:
         data = {}
-        with open('aider.in.last.log', 'w') as f:
+        with open(os.path.join(LOGS_DIR, IN_LOG_FILE), 'w') as f:
             json.dump({}, f)
 
     model = data.get("model", "")
@@ -98,7 +106,7 @@ async def proxy_show(request: Request):
         try:
             resp = await client.post(f"{target}/api/show", json={"model": clean})
             response_data = resp.json()
-            with open('aider.out.last.log', 'w') as f:
+            with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'w') as f:
                 json.dump(response_data, f)
             return response_data
         except:
@@ -116,7 +124,7 @@ async def proxy_show(request: Request):
             "quantization_level": "Q4_K_M"
         }
     }
-    with open('aider.out.last.log', 'w') as f:
+    with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'w') as f:
         json.dump(response_data, f)
     return response_data
 
