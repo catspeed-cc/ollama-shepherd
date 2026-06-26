@@ -7,7 +7,10 @@ This router is designed to forward requests to different models based on the req
 * Handles streaming and non-streaming requests
 
 ## Usage
-To start the router, run `./start_router.sh`. The router will listen on port 10422.
+To start the router, run `./start_router.sh`. The router will listen on a configurable host and port.
+The following environment variables can be set to override the default values:
+* `ROUTER_HOST`: Host IP address (default: "0.0.0.0")
+* `ROUTER_PORT`: Port number (default: 10422)
 The following routes are available:
 * `/api/chat`: Forwards chat requests to the specified model
 * `/api/show`: Forwards show requests to the specified model

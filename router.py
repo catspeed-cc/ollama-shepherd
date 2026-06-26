@@ -2,6 +2,9 @@ from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse, JSONResponse
 import httpx, re, json, os
 
+HOST = os.environ.get("ROUTER_HOST", "0.0.0.0")
+PORT = int(os.environ.get("ROUTER_PORT", 10422))
+
 LOGS_DIR = "logs"
 IN_LOG_FILE = "aider.in.last.log"
 OUT_LOG_FILE = "aider.out.last.log"
@@ -130,4 +133,4 @@ async def proxy_show(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=10422)
+    uvicorn.run(app, host=HOST, port=PORT)
