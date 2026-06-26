@@ -73,24 +73,22 @@ async def proxy_chat(request: Request):
     async def stream_generator():
         try:
             async with client.stream("POST", f"{target}/api/chat", json=data) as resp:
+                response_data = []
                 async for line in resp.aiter_lines():
                     if line.strip():
                         yield line + "\n"
                         try:
                             chunk_data = json.loads(line)
-                            with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'a') as f:
-                                json.dump(chunk_data, f)
-                                f.write('\n')
+                            response_data.append(chunk_data)
                         except Exception as e:
                             error_response = {"error": str(e)}
-                            with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'a') as f:
-                                json.dump(error_response, f)
-                                f.write('\n')
+                            yield json.dumps(error_response) + "\n"
+                with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'w') as f:
+                    json.dump(response_data, f)
         except Exception as e:
             yield json.dumps({"error": str(e)}) + "\n"
-            with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'a') as f:
+            with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'w') as f:
                 json.dump({"error": str(e)}, f)
-                f.write('\n')
 
     return StreamingResponse(stream_generator(), media_type="application/x-ndjson")
 
@@ -99,12 +97,8 @@ async def proxy_chat(request: Request):
 async def proxy_show(request: Request):
     if request.method == "POST":
         data = await request.json()
-        with open(os.path.join(LOGS_DIR, IN_LOG_FILE), 'w') as f:
-            json.dump(data, f)
     else:
         data = {}
-        with open(os.path.join(LOGS_DIR, IN_LOG_FILE), 'w') as f:
-            json.dump({}, f)
 
     model = data.get("model", "")
     clean = re.sub(r'^ollama_chat/', '', model).strip()
@@ -114,8 +108,6 @@ async def proxy_show(request: Request):
         try:
             resp = await client.post(f"{target}/api/show", json={"model": clean})
             response_data = resp.json()
-            with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'w') as f:
-                json.dump(response_data, f)
             return response_data
         except:
             pass
@@ -132,8 +124,6 @@ async def proxy_show(request: Request):
             "quantization_level": "Q4_K_M"
         }
     }
-    with open(os.path.join(LOGS_DIR, OUT_LOG_FILE), 'w') as f:
-        json.dump(response_data, f)
     return response_data
 
 if __name__ == "__main__":
