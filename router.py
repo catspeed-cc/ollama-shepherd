@@ -1,9 +1,12 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse, JSONResponse
 import httpx, re, json, os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 HOST = os.environ.get("ROUTER_HOST", "0.0.0.0")
-PORT = int(os.environ.get("ROUTER_PORT", 10422))
+PORT = int(os.environ.get("ROUTER_PORT", 10420))
 
 LOGS_DIR = "logs"
 IN_LOG_FILE = "aider.in.last.log"

@@ -1,6 +1,11 @@
 #!/bin/bash
 
-LOGS_DIR="logs"
+# Load environment variables from .env file
+set -a
+source .env
+set +a
+
+LOGS_DIR="${LOGS_DIR:-logs}"
 LOG_FILE="router.log"
 RUN_DIR="run"
 PID_FILE="router.pid"
@@ -23,8 +28,6 @@ fi
 
 # Activate venv and start LiteLLM in background
 source "$VENV_ACTIVATE"
-ROUTER_HOST=${ROUTER_HOST:-"0.0.0.0"}
-ROUTER_PORT=${ROUTER_PORT:-10422}
 nohup python router.py > "$LOGS_DIR/$LOG_FILE" 2>&1 &
 
 # Save new PID
