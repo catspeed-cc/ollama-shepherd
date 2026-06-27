@@ -2,7 +2,6 @@
 .env
 
 # do not send logs or pid files to remote
-logs/*
 run/*
 
 # do not send virtual environment to remote
