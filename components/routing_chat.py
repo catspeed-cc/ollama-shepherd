@@ -8,7 +8,10 @@ from .model_selection import get_target_port
 async def proxy_chat(request: Request):
     endpoint_path = request.scope.route.path
     data = await request.json()
-    await log_inbound_chunk("aider.in.last.log", data, endpoint_path)
+    try:
+        await log_inbound_chunk("aider.in.last.log", data, endpoint_path)
+    except Exception as e:
+        print(f"Error logging inbound chunk: {e}")
 
     model = data.get("model", "")
     stream = data.get("stream", False)  # Respect original stream flag
@@ -16,7 +19,10 @@ async def proxy_chat(request: Request):
     target = get_target_port(model)
     if not target:
         error_response = {"error": f"Unknown model: {model}"}
-        await log_outbound_chunk("aider.out.last.log", error_response, endpoint_path)
+        try:
+            await log_outbound_chunk("aider.out.last.log", error_response, endpoint_path)
+        except Exception as e:
+            print(f"Error logging outbound chunk: {e}")
         return JSONResponse(error_response, status_code=400)
 
     print(f"DEBUG: Routing '{model}' to {target} (stream={stream})")
@@ -28,11 +34,17 @@ async def proxy_chat(request: Request):
                 resp = await client.post(f"{target}/api/chat", json=data)
                 resp.raise_for_status()
                 response_data = resp.json()
-                await log_outbound_chunk("aider.out.last.log", response_data, endpoint_path)
+                try:
+                    await log_outbound_chunk("aider.out.last.log", response_data, endpoint_path)
+                except Exception as e:
+                    print(f"Error logging outbound chunk: {e}")
                 return JSONResponse(content=response_data)
         except Exception as e:
             error_response = {"error": str(e)}
-            await log_outbound_chunk("aider.out.last.log", error_response, endpoint_path)
+            try:
+                await log_outbound_chunk("aider.out.last.log", error_response, endpoint_path)
+            except Exception as e:
+                print(f"Error logging outbound chunk: {e}")
             return JSONResponse(error_response, status_code=500)
 
     # STREAMING: Forward NDJSON chunks immediately
@@ -42,10 +54,16 @@ async def proxy_chat(request: Request):
                 async with client.stream("POST", f"{target}/api/chat", json=data) as resp:
                     async for line in resp.aiter_lines():
                         if line.strip():
-                            await log_outbound_chunk("aider.out.last.log", line, endpoint_path)
+                            try:
+                                await log_outbound_chunk("aider.out.last.log", line, endpoint_path)
+                            except Exception as e:
+                                print(f"Error logging outbound chunk: {e}")
                             yield line
         finally:
             # Add trailing newline to log file after stream completes
-            await log_to_file("aider.out.last.log", {"endpoint": endpoint_path})
+            try:
+                await log_to_file("aider.out.last.log", {"endpoint": endpoint_path})
+            except Exception as e:
+                print(f"Error logging to file: {e}")
 
     return StreamingResponse(stream_generator(), media_type="application/x-ndjson")

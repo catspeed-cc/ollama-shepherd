@@ -7,6 +7,9 @@ The following features are supported by this router:
 * Logging: The router logs inbound and outbound payloads to files for debugging purposes.
 * Model mapping: The router uses a predefined mapping of model names to their corresponding ports to forward requests.
 
+## Model Selection
+The `components/model_selection.py` file contains a dictionary called `MODEL_MAP` that maps model names to their respective ports. When a request is received, the router checks if the requested model is in the `MODEL_MAP`. If it is, the request is forwarded to the corresponding port. If not, the router returns an error response.
+
 # Configuration
 To configure the router, you need to copy the `.env.example` file to a new file called `.env`. The `.env` file contains environment variables that are used by the router. The following variables are available:
 * `ROUTER_HOST`: The host IP address to bind to (default: "0.0.0.0")

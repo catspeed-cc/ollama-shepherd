@@ -1,24 +1,27 @@
-import aiofiles
+import asyncio
 import json
 import os
-import asyncio
 from datetime import datetime
 
 LOGS_DIR = os.environ.get("LOGS_DIR", "logs")
 
 async def log_to_file(filename, content=None):
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, _log_to_file_sync, filename, content)
+
+def _log_to_file_sync(filename, content):
     if content is not None:
         if isinstance(content, dict) and "endpoint" in content:
             content["timestamp"] = datetime.now().isoformat()
-            async with aiofiles.open(os.path.join(LOGS_DIR, filename), mode="a") as f:
-                await f.write(json.dumps(content) + "\n")
+            with open(os.path.join(LOGS_DIR, filename), mode="a") as f:
+                f.write(json.dumps(content) + "\n")
         else:
-            async with aiofiles.open(os.path.join(LOGS_DIR, filename), mode="a") as f:
-                await f.write(str(content) + "\n")
+            with open(os.path.join(LOGS_DIR, filename), mode="a") as f:
+                f.write(str(content) + "\n")
     else:
         # Add trailing newline
-        async with aiofiles.open(os.path.join(LOGS_DIR, filename), mode="a") as f:
-            await f.write("\n")
+        with open(os.path.join(LOGS_DIR, filename), mode="a") as f:
+            f.write("\n")
 
 async def log_inbound_chunk(filename, chunk, endpoint):
     await log_to_file(filename, {"endpoint": endpoint, "data": chunk})

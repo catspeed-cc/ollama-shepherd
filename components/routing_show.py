@@ -12,7 +12,10 @@ async def proxy_show(request: Request):
     else:
         data = {}
     stream = data.get("stream", False)  # Respect original stream flag
-    await log_inbound_chunk("aider.in.last.log", data, endpoint_path)
+    try:
+        await log_inbound_chunk("aider.in.last.log", data, endpoint_path)
+    except Exception as e:
+        print(f"Error logging inbound chunk: {e}")
 
     model = data.get("model", "")
     clean = re.sub(r'^ollama_chat/', '', model).strip()
@@ -26,16 +29,25 @@ async def proxy_show(request: Request):
                         try:
                             async for line in resp.aiter_lines():
                                 if line.strip():
-                                    await log_outbound_chunk("aider.out.last.log", line, endpoint_path)
+                                    try:
+                                        await log_outbound_chunk("aider.out.last.log", line, endpoint_path)
+                                    except Exception as e:
+                                        print(f"Error logging outbound chunk: {e}")
                                     yield line
                         finally:
                             # Add trailing newline to log file after stream completes
-                            await log_to_file("aider.out.last.log", {"endpoint": endpoint_path})
+                            try:
+                                await log_to_file("aider.out.last.log", {"endpoint": endpoint_path})
+                            except Exception as e:
+                                print(f"Error logging to file: {e}")
 
                     return StreamingResponse(stream_generator(), media_type="application/x-ndjson")
         except Exception as e:
             error_response = {"error": str(e)}
-            await log_outbound_chunk("aider.out.last.log", error_response, endpoint_path)
+            try:
+                await log_outbound_chunk("aider.out.last.log", error_response, endpoint_path)
+            except Exception as e:
+                print(f"Error logging outbound chunk: {e}")
             return JSONResponse(error_response, status_code=500)
 
     response_data = {
@@ -50,5 +62,8 @@ async def proxy_show(request: Request):
             "quantization_level": "Q4_K_M"
         }
     }
-    await log_outbound_chunk("aider.out.last.log", response_data, endpoint_path)
+    try:
+        await log_outbound_chunk("aider.out.last.log", response_data, endpoint_path)
+    except Exception as e:
+        print(f"Error logging outbound chunk: {e}")
     return response_data
