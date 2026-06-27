@@ -1,4 +1,13 @@
 .aider*
 .env
-pid/*
+logs/*
+run/*
+
+# virtual environment
 venv/*
+
+# cache
+components/__pycache__/
+
+# aider's secret tokens do not commit
+AIDER_GITEA_PAT
