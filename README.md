@@ -40,7 +40,7 @@ There are multiple possible setups:
 
 
 ## Two models share 1 GPU (1 GPU setup)
-You will require one backend Ollama with the endpoint exposed on localhost. The downside to this configuration is that the same GPU has to swap models in between Architect and Coder, and each model must fit on the same GPU.
+You will require one backend Ollama with the endpoint exposed on localhost. The downside to this configuration is that the same GPU has to swap models in between Architect and Coder, and each model must fit on the same GPU. Requests fulfilled on same GPU with different models.
 
 An example of this setup, in `.env`:
 ```
@@ -52,7 +52,7 @@ CODER_MODEL="qwen3.6:27b"
 
 
 ## Two models exclusively on separate GPU's (2 GPU setup)
-This is a more ideal situation, where both GPU's are assigned a model, and they sit idle waiting for requests. When aider sends architect requests, the aarouter recognizes the model name and matches it to see if it is Architect or Coder, then routes to the respective backend.
+This is a more ideal situation, where both GPU's are assigned a model, and they sit idle waiting for requests. When aider sends architect requests, aarouter recognizes the model name, compares to it's configuration, and directs the request to Architect or Coder, the work is sent back to aider.
 
 Critical Considerations:
 - If both GPU's are the exact same, don't worry about ensuring Architect/Coder run on correct GPU index as the initial request will download/update the model and select it.
