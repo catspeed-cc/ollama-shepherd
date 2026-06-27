@@ -36,11 +36,11 @@ def get_target_port(model_name):
             return port
     return None
 
-def log_to_file(filename, endpoint, content, stream=False):
+def log_to_file(filename, endpoint, content, stream=False, is_final=False):
     filepath = os.path.join(LOGS_DIR, filename)
     with open(filepath, 'a') as f:
         json.dump(content, f)
-        if not stream:
+        if not stream or is_final:
             f.write('\n\n')
 
 @app.post("/api/chat")
@@ -77,16 +77,24 @@ async def proxy_chat(request: Request):
         try:
             async with client.stream("POST", f"{target}/api/chat", json=data) as resp:
                 response_data = []
-                async for line in resp.aiter_lines():
-                    if line.strip():
-                        yield line + "\n"
-                        try:
-                            chunk_data = json.loads(line)
-                            response_data.append(chunk_data)
-                        except Exception as e:
-                            error_response = {"error": str(e)}
-                            yield json.dumps(error_response)
-                log_to_file(OUT_LOG_FILE, "/api/chat", response_data, stream=False)
+                try:
+                    async for line in resp.aiter_lines():
+                        if line.strip():
+                            yield line
+                            try:
+                                chunk_data = json.loads(line)
+                                response_data.append(chunk_data)
+                                log_to_file(OUT_LOG_FILE, "/api/chat", chunk_data, stream=True)
+                            except Exception as e:
+                                error_response = {"error": str(e)}
+                                yield json.dumps(error_response)
+                finally:
+                    # Call log_to_file one final time with is_final=True to write the trailing newline
+                    if response_data:
+                        log_to_file(OUT_LOG_FILE, "/api/chat", response_data[-1], stream=True, is_final=True)
+        except StopAsyncIteration:
+            # Handle StopAsyncIteration exception
+            pass
         except Exception as e:
             yield json.dumps({"error": str(e)})
             log_to_file(OUT_LOG_FILE, "/api/chat", {"error": str(e)}, stream=stream)
