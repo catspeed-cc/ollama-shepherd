@@ -1,13 +1,15 @@
 .aider*
 .env
+
+# do not send logs or pid files to remote
 logs/*
 run/*
 
-# virtual environment
+# do not send virtual environment to remote
 venv/*
 
-# cache
+# do not send cache to remote
 components/__pycache__/
 
-# aider's secret tokens do not commit
+# do not send aider's secret token to remote
 AIDER_GITEA_PAT
