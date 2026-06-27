@@ -35,11 +35,15 @@ install_package() {
     fi
 }
 
+install_dependencies() {
+    install_package fastapi
+    install_package uvicorn
+    install_package httpx
+    install_package python-dotenv
+}
+
 # Install dependencies
-install_package fastapi
-install_package uvicorn
-install_package httpx
-install_package python-dotenv
+install_dependencies
 
 # Check if already running
 if [ -f "$RUN_DIR/$PID_FILE" ]; then
