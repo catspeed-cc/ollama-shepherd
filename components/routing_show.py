@@ -2,7 +2,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 import httpx
 import re
-from .logging_utils import log_inbound_chunk, log_outbound_chunk, log_to_file
+from .logging_utils import log_inbound_chunk, log_outbound_chunk, log_to_file, ROUTER_TIMEOUT
 from .model_selection import get_target_port
 
 async def proxy_show(request: Request):
@@ -23,7 +23,7 @@ async def proxy_show(request: Request):
 
     if target:
         try:
-            async with httpx.AsyncClient(timeout=600.0) as client:
+            async with httpx.AsyncClient(timeout=ROUTER_TIMEOUT) as client:
                 async with client.stream("POST", f"{target}/api/show", json={"model": clean}) as resp:
                     async def stream_generator():
                         try:

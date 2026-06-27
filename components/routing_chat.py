@@ -2,7 +2,7 @@ from fastapi import Request
 from fastapi.responses import StreamingResponse, JSONResponse
 import httpx
 import json
-from .logging_utils import log_inbound_chunk, log_outbound_chunk, log_to_file
+from .logging_utils import log_inbound_chunk, log_outbound_chunk, log_to_file, ROUTER_TIMEOUT
 from .model_selection import get_target_port
 
 async def proxy_chat(request: Request):
@@ -30,7 +30,7 @@ async def proxy_chat(request: Request):
     # NON-STREAMING: Wait for full response, return single JSON
     if not stream:
         try:
-            async with httpx.AsyncClient(timeout=600.0) as client:
+            async with httpx.AsyncClient(timeout=ROUTER_TIMEOUT) as client:
                 resp = await client.post(f"{target}/api/chat", json=data)
                 resp.raise_for_status()
                 response_data = resp.json()
@@ -50,7 +50,7 @@ async def proxy_chat(request: Request):
     # STREAMING: Forward NDJSON chunks immediately
     async def stream_generator():
         try:
-            async with httpx.AsyncClient(timeout=600.0) as client:
+            async with httpx.AsyncClient(timeout=ROUTER_TIMEOUT) as client:
                 async with client.stream("POST", f"{target}/api/chat", json=data) as resp:
                     async for line in resp.aiter_lines():
                         if line.strip():

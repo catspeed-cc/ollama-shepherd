@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 
 LOGS_DIR = os.environ.get("LOGS_DIR", "logs")
+ROUTER_TIMEOUT = float(os.environ.get("ROUTER_TIMEOUT", 900.0))
 
 async def log_to_file(filename, content=None):
     loop = asyncio.get_running_loop()
