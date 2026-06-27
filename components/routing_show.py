@@ -1,8 +1,8 @@
 from fastapi import Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 import httpx
 import re
-from .logging_utils import log_to_file
+from .logging_utils import log_inbound_chunk, log_outbound_chunk, log_to_file
 from .model_selection import get_target_port
 
 async def proxy_show(request: Request):
@@ -11,7 +11,7 @@ async def proxy_show(request: Request):
     else:
         data = {}
     stream = data.get("stream", False)  # Respect original stream flag
-    log_to_file("aider.in.last.log", "/api/show", data, stream=stream)
+    await log_inbound_chunk("aider.in.last.log", data)
 
     model = data.get("model", "")
     clean = re.sub(r'^ollama_chat/', '', model).strip()
@@ -20,13 +20,21 @@ async def proxy_show(request: Request):
     if target:
         try:
             async with httpx.AsyncClient(timeout=600.0) as client:
-                resp = await client.post(f"{target}/api/show", json={"model": clean})
-                response_data = resp.json()
-                log_to_file("aider.out.last.log", "/api/show", response_data, stream=stream)
-                return response_data
+                async with client.stream("POST", f"{target}/api/show", json={"model": clean}) as resp:
+                    async def stream_generator():
+                        try:
+                            async for line in resp.aiter_lines():
+                                if line.strip():
+                                    await log_outbound_chunk("aider.out.last.log", line)
+                                    yield line
+                        finally:
+                            # Add trailing newline to log file after stream completes
+                            await log_to_file("aider.out.last.log", "/api/show")
+
+                    return StreamingResponse(stream_generator(), media_type="application/x-ndjson")
         except Exception as e:
             error_response = {"error": str(e)}
-            log_to_file("aider.out.last.log", "/api/show", error_response, stream=stream)
+            await log_outbound_chunk("aider.out.last.log", error_response)
             return JSONResponse(error_response, status_code=500)
 
     response_data = {
@@ -41,5 +49,5 @@ async def proxy_show(request: Request):
             "quantization_level": "Q4_K_M"
         }
     }
-    log_to_file("aider.out.last.log", "/api/show", response_data, stream=stream)
+    await log_outbound_chunk("aider.out.last.log", response_data)
     return response_data

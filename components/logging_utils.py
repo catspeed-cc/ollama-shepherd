@@ -1,12 +1,20 @@
+import aiofiles
 import json
 import os
+import asyncio
 
 LOGS_DIR = os.environ.get("LOGS_DIR", "logs")
 
-def log_to_file(filename, endpoint, content=None, stream=False, is_final=False):
-    filepath = os.path.join(LOGS_DIR, filename)
-    with open(filepath, 'a') as f:
+async def log_to_file(filename, endpoint, content=None):
+    async with aiofiles.open(os.path.join(LOGS_DIR, filename), mode="a") as f:
         if content is not None:
-            json.dump(content, f)
-        if not stream or is_final:
-            f.write('\n\n')
+            await f.write(json.dumps(content) + "\n")
+        else:
+            # Add trailing newline
+            await f.write("\n")
+
+async def log_inbound_chunk(filename, chunk):
+    await log_to_file(filename, "/api/chat", chunk)
+
+async def log_outbound_chunk(filename, chunk):
+    await log_to_file(filename, "/api/chat", chunk)
