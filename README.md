@@ -12,14 +12,20 @@ The `components/model_selection.py` file contains a dictionary called `MODEL_MAP
 
 # Configuration
 To configure the router, you need to copy the `.env.example` file to a new file called `.env`. The `.env` file contains environment variables that are used by the router. The following variables are available:
+
+`# Router Configuration:`
 * `ROUTER_HOST`: The host IP address to bind to (default: "0.0.0.0")
 * `ROUTER_PORT`: The port number to listen on (default: 10420)
+* `ROUTER_TIMEOUT`: The timeout in seconds for HTTP requests made by the router (default: 900.0)
+
+`# Path Configuration:`
 * `LOGS_DIR`: The directory for log files (default: "logs")
 * `RUN_DIR`: The directory for the PID file (default: "run")
 * `VENV_DIR`: The directory for the venv (default: "venv")
+
+`# Filenames:`
 * `LOG_FILE`: The main router log filename (default: "router.log")
 * `PID_FILE`: The main router PID filename (default: "router.pid")
-* `ROUTER_TIMEOUT`: The timeout in seconds for HTTP requests made by the router (default: 900.0)
 
 You can modify these variables in the `.env` file to suit your needs.
 
