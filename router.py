@@ -9,8 +9,6 @@ from components.routing_show import proxy_show
 load_dotenv()
 
 # Load needed environment variables for use (provide safe defaults)
-ROUTER_HOST = os.environ.get("ROUTER_HOST", "0.0.0.0")
-ROUTER_PORT = int(os.environ.get("ROUTER_PORT", 10420))
 LOGS_DIR = os.environ.get("LOGS_DIR", "logs")
 LOG_FILE = os.environ.get("LOG_FILE", "router.log")
 RUN_DIR = os.environ.get("RUN_DIR", "run")
@@ -65,6 +63,10 @@ async def show(request: Request):
 if __name__ == "__main__":
     import uvicorn
     
+    ROUTER_HOST = os.environ.get("ROUTER_HOST", "0.0.0.0")
+    ROUTER_PORT = int(os.environ.get("ROUTER_PORT", 10420))
+    LOGS_DIR = os.environ.get("LOGS_DIR", "logs")
+
     # Create logs directory if missing
     if not os.path.exists(LOGS_DIR):
         os.makedirs(LOGS_DIR)
