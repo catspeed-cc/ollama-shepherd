@@ -16,8 +16,7 @@ To configure the router, you need to copy the `.env.example` file to a new file 
 * `ROUTER_PORT`: The port number to listen on (default: 10420)
 * `LOGS_DIR`: The directory for log files (default: "logs")
 * `RUN_DIR`: The directory for the PID file (default: "run")
-* `PID_FILE`: The name of the PID file (default: "router.pid")
-* `VENV_ACTIVATE`: The path to the virtual environment activation script (default: "/home/aider/aider-venv/bin/activate")
+* `VENV_DIR`: The directory for the venv (default: "venv")
 
 You can modify these variables in the `.env` file to suit your needs.
 
