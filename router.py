@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Request
 import os
 import sys
 from dotenv import load_dotenv
+from fastapi import FastAPI, Request
 from components.routing_chat import proxy_chat
 from components.routing_show import proxy_show
 
@@ -9,6 +9,8 @@ from components.routing_show import proxy_show
 load_dotenv()
 
 # Load needed environment variables for use (provide safe defaults)
+ROUTER_HOST = os.environ.get("ROUTER_HOST", "0.0.0.0")
+ROUTER_PORT = int(os.environ.get("ROUTER_PORT", 10420))
 LOGS_DIR = os.environ.get("LOGS_DIR", "logs")
 LOG_FILE = os.environ.get("LOG_FILE", "router.log")
 RUN_DIR = os.environ.get("RUN_DIR", "run")
@@ -51,6 +53,7 @@ Please correct the backend configuration in .env and restart the router.
 app = FastAPI()
 
 @app.post("/api/chat")
+@app.get("/api/chat")
 async def chat(request: Request):
     return await proxy_chat(request)
 
@@ -62,12 +65,8 @@ async def show(request: Request):
 if __name__ == "__main__":
     import uvicorn
     
-    HOST = os.environ.get("ROUTER_HOST", "0.0.0.0")
-    PORT = int(os.environ.get("ROUTER_PORT", 10420))
-    LOGS_DIR = os.environ.get("LOGS_DIR", "logs")
-
     # Create logs directory if missing
     if not os.path.exists(LOGS_DIR):
         os.makedirs(LOGS_DIR)
 
-    uvicorn.run(app, host=HOST, port=PORT)
+    uvicorn.run(app, host=ROUTER_HOST, port=ROUTER_PORT)
