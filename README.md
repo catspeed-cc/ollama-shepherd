@@ -1,11 +1,12 @@
 # Description
-This router is designed to forward requests to different models based on the requested model. The routing logic is based on a predefined mapping of model names to their corresponding ports. The `router.py` file contains a dictionary called `MODEL_MAP` that maps model names to their respective ports. When a request is received, the router checks if the requested model is in the `MODEL_MAP`. If it is, the request is forwarded to the corresponding port. If not, the router returns an error response.
+This router is designed to sit between Aider (in Architect mode) and one or two Ollama instances, and forward requests to different models based on the requested model.
+
+The routing logic is based on a predefined mapping of model names to their corresponding ports within the `.env` file. When a request is received, the router checks if the requested model is either Architect or Coder and the request is forwarded to the corresponding backend. If unable to route the request, the router returns an error response.
 
 # Features
 The following features are supported by this router:
 * Streaming support: The router can handle streaming requests and responses.
 * Logging: The router logs inbound and outbound payloads to files for debugging purposes.
-* Model mapping: The router uses a predefined mapping of model names to their corresponding ports to forward requests.
 
 # Configuration
 To configure the router, you need to copy the `.env.example` file to a new file called `.env`. The `.env` file contains environment variables that are used by the router. The following variables are available:
