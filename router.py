@@ -36,10 +36,11 @@ def get_target_port(model_name):
             return port
     return None
 
-def log_to_file(filename, endpoint, content, stream=False, is_final=False):
+def log_to_file(filename, endpoint, content=None, stream=False, is_final=False):
     filepath = os.path.join(LOGS_DIR, filename)
     with open(filepath, 'a') as f:
-        json.dump(content, f)
+        if content is not None:
+            json.dump(content, f)
         if not stream or is_final:
             f.write('\n\n')
 
@@ -89,9 +90,8 @@ async def proxy_chat(request: Request):
                                 error_response = {"error": str(e)}
                                 yield json.dumps(error_response)
                 finally:
-                    # Call log_to_file one final time with is_final=True to write the trailing newline
-                    if response_data:
-                        log_to_file(OUT_LOG_FILE, "/api/chat", response_data[-1], stream=True, is_final=True)
+                    # Append trailing newline to aider.out.last.log without re-logging last chunk
+                    log_to_file(OUT_LOG_FILE, "/api/chat", is_final=True)
         except StopAsyncIteration:
             # Handle StopAsyncIteration exception
             pass
