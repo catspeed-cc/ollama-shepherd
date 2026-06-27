@@ -9,10 +9,8 @@ set +a
 LOGS_DIR="${LOGS_DIR:-logs}"
 RUN_DIR="${RUN_DIR:-run}"
 VENV_DIR="${VENV_DIR:-venv}"
-
-# Variables not from .env - local variables
-LOG_FILE="router.log"
-PID_FILE="router.pid"
+LOG_FILE="${LOG_FILE:-router.log}"
+PID_FILE="${LOG_FILE:-router.pid}"
 
 # Create directories if missing
 mkdir -p "$LOGS_DIR" "$RUN_DIR"

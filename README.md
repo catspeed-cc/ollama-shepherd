@@ -17,6 +17,8 @@ To configure the router, you need to copy the `.env.example` file to a new file 
 * `LOGS_DIR`: The directory for log files (default: "logs")
 * `RUN_DIR`: The directory for the PID file (default: "run")
 * `VENV_DIR`: The directory for the venv (default: "venv")
+* `LOG_FILE`: The main router log filename (default: "router.log")
+* `PID_FILE`: The main router PID filename (default: "router.pid")
 
 You can modify these variables in the `.env` file to suit your needs.
 
