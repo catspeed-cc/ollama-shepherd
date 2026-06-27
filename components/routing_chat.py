@@ -2,11 +2,11 @@ from fastapi import Request
 from fastapi.responses import StreamingResponse, JSONResponse
 import httpx
 import json
-from .logging_utils import log_inbound_chunk, log_outbound_chunk, log_to_file, ROUTER_TIMEOUT
+from .logging_utils import log_inbound_chunk, log_outbound_chunk, log_to_file, ROUTER_TIMEOUT, get_endpoint_path
 from .model_selection import get_target_port
 
 async def proxy_chat(request: Request):
-    endpoint_path = request.scope.route.path
+    endpoint_path = get_endpoint_path(request)
     data = await request.json()
     try:
         await log_inbound_chunk("aider.in.last.log", data, endpoint_path)

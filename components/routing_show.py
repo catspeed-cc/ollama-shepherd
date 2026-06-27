@@ -2,11 +2,11 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 import httpx
 import re
-from .logging_utils import log_inbound_chunk, log_outbound_chunk, log_to_file, ROUTER_TIMEOUT
+from .logging_utils import log_inbound_chunk, log_outbound_chunk, log_to_file, ROUTER_TIMEOUT, get_endpoint_path
 from .model_selection import get_target_port
 
 async def proxy_show(request: Request):
-    endpoint_path = request.scope.route.path
+    endpoint_path = get_endpoint_path(request)
     if request.method == "POST":
         data = await request.json()
     else:

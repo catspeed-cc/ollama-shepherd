@@ -2,9 +2,18 @@ import asyncio
 import json
 import os
 from datetime import datetime
+from fastapi import Request
 
 LOGS_DIR = os.environ.get("LOGS_DIR", "logs")
 ROUTER_TIMEOUT = float(os.environ.get("ROUTER_TIMEOUT", 900.0))
+
+def get_endpoint_path(request: Request) -> str:
+    """Safely extracts the endpoint path from the request."""
+    route = request.scope.get("route")
+    if route is not None:
+        return route.path
+    else:
+        return request.url.path if request.url.path else "unknown"
 
 async def log_to_file(filename, content=None):
     loop = asyncio.get_running_loop()
