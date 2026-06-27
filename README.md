@@ -29,15 +29,12 @@ To configure the router, you need to copy the `.env.example` file to a new file 
 
 You can modify these variables in the `.env` file to suit your needs.
 
-# Usage
-To use the router, follow these steps:
-1. Copy the `.env.example` file to a new file called `.env`: `cp .env.example .env`
-2. Modify the variables in the `.env` file as needed.
-3. Start the router: `./start_router.sh`
-4. Verify that the router is running: `ps -ef | grep python`
-5. Stop the router: `./stop_router.sh`
-6. Verify that the router has stopped: `ps -ef | grep python`
+# Backend Ollama Configuration
+The following environment variables are used to configure the backend ollama endpoints:
 
-Note: Make sure to replace `/home/aider/aider-venv/bin/activate` with the actual path to your virtual environment activation script.
+* `ARCHITECT_ENDPOINT`: The endpoint URL for the architect model.
+* `ARCHITECT_MODEL`: The name of the architect model.
+* `CODER_ENDPOINT`: The endpoint URL for the coder model.
+* `CODER_MODEL`: The name of the coder model.
 
-By following these steps, you can configure and use the router to forward requests to different models based on the requested model.
+These variables should be defined in the `.env` file. For example:
