@@ -1,9 +1,14 @@
 import re
 
+# MODEL MAP to route based on MODEL REQUESTED by aider - not GPU index.
 MODEL_MAP = {
-    "qwen3.6:27b": "http://localhost:11434",    # GPU 1 (Coder)
-    "llama3.3:70b": "http://localhost:11435",   # GPU 3 (Reasoner)
-    "gemma2:9b": "http://localhost:11436"       # GPU 0 (Fast)
+    # visual separation for human user
+    "llama3.3:70b": "http://localhost:11435",   # Architect/Reasoner Endpoint - GPU 1: INDEX: 3
+    "llama3.3:70b-desc": "ollama-a100-2",       # Description of Architect/Reasoner Endpoint for human
+    # visual separation for human user
+    "qwen3.6:27b": "http://localhost:11434",    # Editor/Coder Endpoint - GPU 2: INDEX: 1
+    "qwen3.6:27b-desc": "ollama-a100-1"         # Description of Editor/Coder endpoint for human
+    # visual separation for human user
 }
 
 def get_target_port(model_name):
