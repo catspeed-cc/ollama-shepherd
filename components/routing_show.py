@@ -11,7 +11,7 @@ async def proxy_show(request: Request):
     else:
         data = {}
     stream = data.get("stream", False)  # Respect original stream flag
-    await log_inbound_chunk("aider.in.last.log", data)
+    await log_inbound_chunk("aider.in.last.log", data, "/api/show")
 
     model = data.get("model", "")
     clean = re.sub(r'^ollama_chat/', '', model).strip()
@@ -25,16 +25,16 @@ async def proxy_show(request: Request):
                         try:
                             async for line in resp.aiter_lines():
                                 if line.strip():
-                                    await log_outbound_chunk("aider.out.last.log", line)
+                                    await log_outbound_chunk("aider.out.last.log", line, "/api/show")
                                     yield line
                         finally:
                             # Add trailing newline to log file after stream completes
-                            await log_to_file("aider.out.last.log", "/api/show")
+                            await log_to_file("aider.out.last.log")
 
                     return StreamingResponse(stream_generator(), media_type="application/x-ndjson")
         except Exception as e:
             error_response = {"error": str(e)}
-            await log_outbound_chunk("aider.out.last.log", error_response)
+            await log_outbound_chunk("aider.out.last.log", error_response, "/api/show")
             return JSONResponse(error_response, status_code=500)
 
     response_data = {
@@ -49,5 +49,5 @@ async def proxy_show(request: Request):
             "quantization_level": "Q4_K_M"
         }
     }
-    await log_outbound_chunk("aider.out.last.log", response_data)
+    await log_outbound_chunk("aider.out.last.log", response_data, "/api/show")
     return response_data
