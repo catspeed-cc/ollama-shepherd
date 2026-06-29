@@ -37,7 +37,7 @@ async def proxy_show(request: Request):
                         finally:
                             # Add trailing newline to log file after stream completes
                             try:
-                                await log_to_file("aider.out.last.log", {"endpoint": endpoint_path})
+                                await log_to_file("aider.out.last.log")
                             except Exception as e:
                                 print(f"Error logging to file: {e}")
 

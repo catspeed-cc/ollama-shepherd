@@ -20,9 +20,12 @@ def get_endpoint_path(request: Request) -> str:
 
 async def log_to_file(filename, content=None):
     loop = asyncio.get_running_loop()
-    await loop.run_in_executor(None, _log_to_file_sync, filename, content)
+    if content is None:
+        await loop.run_in_executor(None, _log_to_file_sync, filename, None, True)
+    else:
+        await loop.run_in_executor(None, _log_to_file_sync, filename, content)
 
-def _log_to_file_sync(filename, content):
+def _log_to_file_sync(filename, content, end_of_stream=False):
     if LOG_ENABLED:
         if content is not None:
             if isinstance(content, dict) and "endpoint" in content:
@@ -36,6 +39,29 @@ def _log_to_file_sync(filename, content):
             # Add trailing newline
             with open(join_path(LOGS_DIR, filename), mode="a") as f:
                 f.write("\n")
+
+        if end_of_stream:
+            # Rotate log file
+            log_dir = os.path.dirname(join_path(LOGS_DIR, filename))
+            base_filename = os.path.basename(filename)
+            files = [f for f in os.listdir(log_dir) if f.startswith(base_filename + '.')]
+
+            # Sort files by number (if any)
+            numbered_files = []
+            for f in files:
+                parts = f.split('.')
+                if len(parts) > 1 and parts[1].isdigit():
+                    numbered_files.append((int(parts[1]), f))
+            numbered_files.sort(key=lambda x: x[0])
+
+            # Determine next number
+            next_number = 1
+            if numbered_files:
+                next_number = numbered_files[-1][0] + 1
+
+            # Move log file to new location
+            new_filename = f"{base_filename}.{next_number}"
+            os.rename(join_path(LOGS_DIR, filename), join_path(LOGS_DIR, new_filename))
 
 async def log_inbound_chunk(filename, chunk, endpoint):
     if LOG_ENABLED:
