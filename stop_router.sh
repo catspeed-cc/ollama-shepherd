@@ -12,7 +12,7 @@ VENV_DIR="${VENV_DIR:-venv}"
 LOG_FILE="${LOG_FILE:-router.log}"
 PID_FILE="${PID_FILE:-router.pid}"
 
-# Check if already running
+# Check if PID file exists
 if [ -f "$RUN_DIR/$PID_FILE" ]; then
     PID=$(cat "$RUN_DIR/$PID_FILE")
     if ps -p "$PID" > /dev/null; then
@@ -24,6 +24,8 @@ if [ -f "$RUN_DIR/$PID_FILE" ]; then
         echo "Stale PID file found. Removing."
         rm "$RUN_DIR/$PID_FILE"
     fi
+else
+    echo "Router is not running."
 fi
 
-
+echo "Router stopped successfully."
