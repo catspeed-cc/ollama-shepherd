@@ -81,4 +81,4 @@ PID=$!
 # Save new PID
 echo $PID > "$RUN_DIR/$PID_FILE"
 
-( wait $PID; rm -f "$RUN_DIR/$PID_FILE" ) &
+( while kill -0 $PID 2>/dev/null; do sleep 5; done; rm -f "$RUN_DIR/$PID_FILE" ) &
