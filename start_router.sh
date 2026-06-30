@@ -81,6 +81,4 @@ PID=$!
 # Save new PID
 echo $PID > "$RUN_DIR/$PID_FILE"
 
-# Wait for the process to finish and remove PID file
-wait $PID
-rm "$RUN_DIR/$PID_FILE"
+( wait $PID; rm -f "$RUN_DIR/$PID_FILE" ) &
